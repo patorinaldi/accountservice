@@ -26,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return repository.findUserByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Not Found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found."));
     }
 
     private Collection<GrantedAuthority> getAuthorities(User user){

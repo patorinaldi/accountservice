@@ -1,5 +1,6 @@
 package account_service.security;
 
+import account_service.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,14 +31,15 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(HttpMethod.GET, "/api/admin/user/**").hasRole("ADMINISTRATOR");
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/admin/user/**").hasRole("ADMINISTRATOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/admin/user/role/**").hasRole("ADMINISTRATOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/admin/user/access").hasRole("ADMINISTRATOR");
-                    auth.requestMatchers(HttpMethod.GET, "/api/security/events/").hasRole("AUDITOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/acct/payments").hasRole("ACCOUNTANT");
-                    auth.requestMatchers(HttpMethod.POST, "/api/acct/payments").hasRole("ACCOUNTANT");
-                    auth.requestMatchers(HttpMethod.GET, "/api/empl/payment").hasAnyRole("ACCOUNTANT", "USER");
+                    auth.requestMatchers(HttpMethod.GET, "/api/admin/user/**").hasRole(Role.ROLE_ADMINISTRATOR.getWithoutPrefix());
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/admin/user/**").hasRole(Role.ROLE_ADMINISTRATOR.getWithoutPrefix());
+                    auth.requestMatchers(HttpMethod.PUT, "/api/admin/user/role/**").hasRole(Role.ROLE_ADMINISTRATOR.getWithoutPrefix());
+                    auth.requestMatchers(HttpMethod.PUT, "/api/admin/user/access").hasRole(Role.ROLE_ADMINISTRATOR.getWithoutPrefix());
+                    auth.requestMatchers(HttpMethod.GET, "/api/security/events/").hasRole(Role.ROLE_AUDITOR.getWithoutPrefix());
+                    auth.requestMatchers(HttpMethod.PUT, "/api/acct/payments").hasRole(Role.ROLE_ACCOUNTANT.getWithoutPrefix());
+                    auth.requestMatchers(HttpMethod.POST, "/api/acct/payments").hasRole(Role.ROLE_ACCOUNTANT.getWithoutPrefix());
+                    auth.requestMatchers(HttpMethod.GET, "/api/empl/payment").hasAnyRole(Role.ROLE_ACCOUNTANT.getWithoutPrefix(),
+                            Role.ROLE_USER.getWithoutPrefix());
                     auth.requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll();
                     auth.requestMatchers(HttpMethod.POST, "/error").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/error").permitAll();

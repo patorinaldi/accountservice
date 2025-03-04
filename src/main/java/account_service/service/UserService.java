@@ -1,5 +1,6 @@
 package account_service.service;
 
+import account_service.enums.Role;
 import account_service.enums.SecurityEventType;
 import account_service.event.SecurityEventPublisher;
 import account_service.exception.*;
@@ -29,7 +30,7 @@ import java.util.Optional;
 public class UserService {
 
     private UserRepository userRepository;
-    private UserMapper mapper;
+    private UserMapper userMapper;
     private PasswordEncoder encoder;
     private HackedPasswordRepository hackedPasswordRepository;
     private GroupRepository groupRepository;
@@ -43,22 +44,22 @@ public class UserService {
         if (hackedPasswordRepository.findByPassword(dto.getPassword()).isPresent()) {
             throw new HackedPasswordException();
         }
-        User user = mapper.toEntity(dto);
+        User user = userMapper.toEntity(dto);
         user.setUsername(dto.getUsername().toLowerCase());
         user.setPassword(encoder.encode(dto.getPassword()));
         if (userRepository.count() == 0) {
-            Group group = groupRepository.findByCode("ROLE_ADMINISTRATOR").orElseThrow(() -> new NotFoundException("Role not found!"));
+            Group group = groupRepository.findByCode(Role.ROLE_ADMINISTRATOR.name()).orElseThrow(() -> new NotFoundException("Role not found!"));
             user.getUserGroups().add(group);
         } else {
-            Group group = groupRepository.findByCode("ROLE_USER").orElseThrow(() -> new NotFoundException("Role not found!"));
+            Group group = groupRepository.findByCode(Role.ROLE_USER.name()).orElseThrow(() -> new NotFoundException("Role not found!"));
             user.getUserGroups().add(group);
         }
-        return mapper.toDTO(userRepository.save(user));
+        return userMapper.toDTO(userRepository.save(user));
     }
 
     @Cacheable("users")
     public UserDTO findByUsername(@Email String username) {
-        return mapper.toDTO(userRepository.findUserByUsernameIgnoreCase(username).orElseThrow(NotFoundException::new));
+        return userMapper.toDTO(userRepository.findUserByUsernameIgnoreCase(username).orElseThrow(NotFoundException::new));
     }
 
     public UserDTO getCurrentUserDTO() {
@@ -99,7 +100,7 @@ public class UserService {
 
         User user = optionalUser.get();
 
-        if (user.getUserGroups().stream().anyMatch(g -> g.getCode().equals("ROLE_ADMINISTRATOR"))) {
+        if (user.getUserGroups().stream().anyMatch(g -> g.getCode().equals(Role.ROLE_ADMINISTRATOR.name()))) {
             return;
         }
 

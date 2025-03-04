@@ -1,5 +1,6 @@
 package account_service.security;
 
+import account_service.enums.Role;
 import account_service.model.Group;
 import account_service.model.HackedPassword;
 import account_service.repository.GroupRepository;
@@ -39,10 +40,10 @@ public class DataLoader {
 
     private void createRoles(){
         try {
-            groupRepository.save(new Group(null,"ROLE_ADMINISTRATOR", "Administrator Group", "administrative", null));
-            groupRepository.save(new Group(null, "ROLE_AUDITOR", "Auditor Group", "business", null));
-            groupRepository.save(new Group(null,"ROLE_ACCOUNTANT", "Accountant Group", "business", null));
-            groupRepository.save(new Group(null,"ROLE_USER", "User Group", "business", null));
+            groupRepository.save(new Group(null, Role.ROLE_ADMINISTRATOR.name(), "Administrator Group", "administrative", null));
+            groupRepository.save(new Group(null, Role.ROLE_AUDITOR.name(), "Auditor Group", "business", null));
+            groupRepository.save(new Group(null,Role.ROLE_ACCOUNTANT.name(), "Accountant Group", "business", null));
+            groupRepository.save(new Group(null, Role.ROLE_USER.name(), "User Group", "business", null));
         } catch (Exception _) {
         }
     }

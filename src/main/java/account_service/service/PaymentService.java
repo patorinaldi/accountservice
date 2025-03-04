@@ -33,7 +33,7 @@ public class PaymentService {
     @Transactional
     public void uploadPayments(List<PaymentDTO> paymentDTOList) {
         for (PaymentDTO paymentDTO : paymentDTOList) {
-            if (!paymentDTO.getPeriod().matches("^(0[1-9]|1[0-2])-(\\d{4})$")){
+            if (!paymentDTO.getPeriod().matches("^(0[1-9]|1[0-2])-(\\d{4})$")) {
                 throw new InvalidInputException();
             }
             User user = userRepository
@@ -46,7 +46,7 @@ public class PaymentService {
     public void savePayment(PaymentDTO paymentDTO, User user) {
         if (paymentRepository.findByEmployeeIdOrderByPeriodDesc(user.getId()).stream()
                 .anyMatch(x -> x.getPeriod().equals(paymentDTO.getPeriod()))) {
-            throw new InvalidInputException("Invalid period for employee");
+            throw new InvalidInputException("Invalid period for employee " + user.getUsername() + ".");
         }
         Payment payment = paymentMapper.toEntity(paymentDTO);
         paymentRepository.save(payment);
@@ -73,7 +73,7 @@ public class PaymentService {
     public List<PaymentDTO> getPayments(UserDTO userDTO) {
         List<PaymentDTO> list = new ArrayList<>();
         paymentRepository.findByEmployeeIdOrderByPeriodDesc(userService.getIdByUsername(userDTO.getUsername()))
-                .forEach(p ->list.add(paymentMapper.toDTO(p)));
+                .forEach(p -> list.add(paymentMapper.toDTO(p)));
         return list;
     }
 

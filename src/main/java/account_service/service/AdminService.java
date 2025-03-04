@@ -4,6 +4,7 @@ import account_service.dto.LockRequest;
 import account_service.dto.RoleDTO;
 import account_service.dto.UserDTO;
 import account_service.enums.LockingOperation;
+import account_service.enums.Role;
 import account_service.exception.InvalidEmployeeException;
 import account_service.exception.InvalidInputException;
 import account_service.exception.NotFoundException;
@@ -40,8 +41,8 @@ public class AdminService {
     public void deleteUser(@Email(regexp = ".*@acme\\.com$") String email) {
 
         User user = userRepository.findUserByUsernameIgnoreCase(email).orElseThrow(NotFoundException::new);
-        if (user.getUserGroups().stream().anyMatch(group -> group.getCode().equals("ROLE_ADMINISTRATOR"))) {
-            throw new InvalidEmployeeException("Can't remove ADMINISTRATOR role!");
+        if (user.getUserGroups().stream().anyMatch(group -> group.getCode().equals(Role.ROLE_ADMINISTRATOR.name()))) {
+            throw new InvalidEmployeeException("Administrator " + user.getUsername() + " cannot be deleted.");
         }
         userRepository.delete(user);
     }
@@ -49,9 +50,9 @@ public class AdminService {
     public UserDTO manageRoles(RoleDTO roleDTO) {
 
         Group role = groupRepository.findByCode("ROLE_" + roleDTO.getRole())
-                .orElseThrow(() -> new NotFoundException("Role not found!"));
+                .orElseThrow(() -> new NotFoundException("Role " + roleDTO + " not found."));
         User user = userRepository.findUserByUsernameIgnoreCase(roleDTO.getUser())
-                .orElseThrow(() -> new NotFoundException("User not found!"));
+                .orElseThrow(() -> new NotFoundException("User " + roleDTO.getUser() + " not found."));
 
         switch (roleDTO.getOperation()) {
             case "GRANT":
@@ -67,18 +68,18 @@ public class AdminService {
     }
 
     private void removeRoleFromUser(User user, Group role) {
-        if (role.equals(groupRepository.findByCode("ROLE_ADMINISTRATOR").orElseThrow(() -> new NotFoundException("Role not found")))) {
-            throw new InvalidEmployeeException("Can't remove ADMINISTRATOR role!");
+        if (role.equals(groupRepository.findByCode(Role.ROLE_ADMINISTRATOR.name()).orElseThrow(() -> new NotFoundException("Role not found")))) {
+            throw new InvalidEmployeeException(role.getCode() + " cannot be removed");
         }
 
         boolean hasRole = user.getUserGroups().stream().anyMatch(group -> group.equals(role));
 
         if (!hasRole) {
-            throw new InvalidEmployeeException("The user does not have a role!");
+            throw new InvalidEmployeeException("User " + user.getUsername() + " does not have " + role.getCode() + " role!");
         }
 
         if (user.getUserGroups().size() == 1) {
-            throw new InvalidEmployeeException("The user must have at least one role!");
+            throw new InvalidEmployeeException("The user " + user.getUsername() + " must have at least one role.");
         }
 
         user.getUserGroups().remove(role);
@@ -86,7 +87,11 @@ public class AdminService {
 
     private void grantRoleToUser(User user, Group role) {
         if (combines(user, role)) {
-            throw new InvalidInputException("The user cannot combine administrative and business roles!");
+            throw new InvalidInputException("User " + user.getUsername() + " cannot combine administrative and business roles.");
+        }
+        boolean hasRole = user.getUserGroups().stream().anyMatch(group -> group.equals(role));
+        if (hasRole) {
+            throw new InvalidEmployeeException("User " + user.getUsername() + " already have role " + role.getCode());
         }
         user.getUserGroups().add(role);
     }
@@ -97,10 +102,10 @@ public class AdminService {
 
     public void manageAccess(@Valid LockRequest request) {
         User user = userRepository.findUserByUsernameIgnoreCase(request.getUser())
-                .orElseThrow(() -> new NotFoundException("User not found!"));
+                .orElseThrow(() -> new NotFoundException("User " + request.getUser() + "  not found!"));
         if (request.getOperation().equals(LockingOperation.LOCK)) {
-            if (user.getUserGroups().stream().anyMatch(group -> group.getCode().equals("ROLE_ADMINISTRATOR"))) {
-                throw new InvalidInputException("Can't lock the ADMINISTRATOR!");
+            if (user.getUserGroups().stream().anyMatch(group -> group.getCode().equals(Role.ROLE_ADMINISTRATOR.name()))) {
+                throw new InvalidInputException("Administrator " + user.getUsername() + " cannot be locked.");
             }
             user.setLocked(true);
         } else {
