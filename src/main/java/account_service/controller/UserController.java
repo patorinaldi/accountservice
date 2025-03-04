@@ -5,7 +5,6 @@ import account_service.dto.ResponseDTO;
 import account_service.dto.UserDTO;
 import account_service.enums.SecurityEventType;
 import account_service.event.SecurityEventPublisher;
-import account_service.repository.HackedPasswordRepository;
 import account_service.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
