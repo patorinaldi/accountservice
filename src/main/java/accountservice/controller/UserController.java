@@ -9,6 +9,7 @@ import accountservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,16 +35,16 @@ public class UserController {
 
     @PostMapping("/api/auth/changepass")
     public ResponseEntity<ResponseDTO> changePass(@Valid @RequestBody PasswordRequest request) {
-        UserDTO user = userService.getCurrentUserDTO();
-        userService.updatePassword(user, request.getNewPassword());
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        userService.updatePassword(email, request.getNewPassword());
         ResponseDTO responseDTO = ResponseDTO.builder()
-                .email(user.getUsername())
+                .email(email)
                 .status("The password has been updated successfully")
                 .build();
         securityEventPublisher.publishEvent(
                 SecurityEventType.CHANGE_PASSWORD,
-                user.getUsername(),
-                user.getUsername(),
+                email,
+                email,
                 "/api/auth/changepass"
         );
         return ResponseEntity.ok(responseDTO);

@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -38,6 +39,7 @@ public class AdminService {
                 .toList();
     }
 
+    @Transactional
     public void deleteUser(@Email(regexp = ".*@acme\\.com$") String email) {
 
         User user = userRepository.findUserByUsernameIgnoreCase(email).orElseThrow(NotFoundException::new);
@@ -47,6 +49,7 @@ public class AdminService {
         userRepository.delete(user);
     }
 
+    @Transactional
     public UserDTO manageRoles(RoleDTO roleDTO) {
 
         Group role = groupRepository.findByCode("ROLE_" + roleDTO.getRole().toUpperCase())
@@ -67,6 +70,7 @@ public class AdminService {
         return userMapper.toDTO(userRepository.save(user));
     }
 
+    @Transactional
     private void removeRoleFromUser(User user, Group role) {
         if (role.equals(groupRepository.findByCode(Role.ROLE_ADMINISTRATOR.name()).orElseThrow(() -> new NotFoundException("Role not found")))) {
             throw new InvalidEmployeeException(role.getCode() + " cannot be removed");
@@ -85,6 +89,7 @@ public class AdminService {
         user.getUserGroups().remove(role);
     }
 
+    @Transactional
     private void grantRoleToUser(User user, Group role) {
         if (isCrossCategoryAssignment(user, role)) {
             throw new InvalidInputException("User " + user.getUsername() + " cannot combine administrative and business roles.");
@@ -100,6 +105,7 @@ public class AdminService {
         return user.getUserGroups().stream().noneMatch(group -> group.getRole().equals(newGroup.getRole()));
     }
 
+    @Transactional
     public void manageAccess(@Valid LockRequest request) {
         User user = userRepository.findUserByUsernameIgnoreCase(request.getUser())
                 .orElseThrow(() -> new NotFoundException("User " + request.getUser() + "  not found!"));

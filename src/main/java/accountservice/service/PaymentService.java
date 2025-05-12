@@ -10,10 +10,10 @@ import accountservice.model.Payment;
 import accountservice.model.User;
 import accountservice.repository.PaymentRepository;
 import accountservice.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -52,6 +52,7 @@ public class PaymentService {
         paymentRepository.save(payment);
     }
 
+    @Transactional
     public void updatePayment(PaymentDTO paymentDTO) {
         User user = userRepository
                 .findUserByUsernameIgnoreCase(paymentDTO.getEmployee())

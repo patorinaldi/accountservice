@@ -13,7 +13,6 @@ import accountservice.model.User;
 import accountservice.dto.UserDTO;
 import accountservice.mapper.UserMapper;
 import accountservice.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -21,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -37,6 +37,7 @@ public class UserService {
     private FailedLoginAttemptRepository failedLoginAttemptRepository;
     private SecurityEventPublisher securityEventPublisher;
 
+    @Transactional
     public UserDTO signup(UserDTO dto) {
         if (userRepository.findUserByUsernameIgnoreCase(dto.getUsername()).isPresent()) {
             throw new UserExistsException();
@@ -67,14 +68,17 @@ public class UserService {
         return findByUsername(authentication.getName());
     }
 
-    public void updatePassword(UserDTO userDTO, String password) {
+    @Transactional
+    public void updatePassword(String username, String password) {
         if (hackedPasswordRepository.findByPassword(password).isPresent()) {
             throw new HackedPasswordException();
         }
-        if (encoder.matches(password, userDTO.getPassword())) {
+
+        User user = userRepository.findUserByUsernameIgnoreCase(username).orElseThrow(NotFoundException::new);
+
+        if (encoder.matches(password, user.getPassword())) {
             throw new SamePasswordException();
         }
-        User user = userRepository.getReferenceById(userDTO.getId());
         user.setPassword(encoder.encode(password));
         userRepository.save(user);
     }
