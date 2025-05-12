@@ -49,7 +49,7 @@ public class AdminService {
 
     public UserDTO manageRoles(RoleDTO roleDTO) {
 
-        Group role = groupRepository.findByCode("ROLE_" + roleDTO.getRole())
+        Group role = groupRepository.findByCode("ROLE_" + roleDTO.getRole().toUpperCase())
                 .orElseThrow(() -> new NotFoundException("Role " + roleDTO + " not found."));
         User user = userRepository.findUserByUsernameIgnoreCase(roleDTO.getUser())
                 .orElseThrow(() -> new NotFoundException("User " + roleDTO.getUser() + " not found."));
@@ -86,7 +86,7 @@ public class AdminService {
     }
 
     private void grantRoleToUser(User user, Group role) {
-        if (combines(user, role)) {
+        if (isCrossCategoryAssignment(user, role)) {
             throw new InvalidInputException("User " + user.getUsername() + " cannot combine administrative and business roles.");
         }
         boolean hasRole = user.getUserGroups().stream().anyMatch(group -> group.equals(role));
@@ -96,8 +96,8 @@ public class AdminService {
         user.getUserGroups().add(role);
     }
 
-    private boolean combines(User user, Group role) {
-        return user.getUserGroups().stream().noneMatch(group -> group.getRole().equals(role.getRole()));
+    private boolean isCrossCategoryAssignment(User user, Group newGroup) {
+        return user.getUserGroups().stream().noneMatch(group -> group.getRole().equals(newGroup.getRole()));
     }
 
     public void manageAccess(@Valid LockRequest request) {

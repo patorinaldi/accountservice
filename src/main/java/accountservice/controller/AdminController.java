@@ -45,7 +45,7 @@ public class AdminController {
                 SecurityEventType.DELETE_USER,
                 userService.getCurrentUserDTO().getUsername(),
                 email,
-                "api/admin/user"
+                "/api/admin/user"
         );
 
         return ResponseEntity.ok(responseDTO);
@@ -61,14 +61,14 @@ public class AdminController {
                     SecurityEventType.GRANT_ROLE,
                     userService.getCurrentUserDTO().getUsername(),
                     "Grant role " + roleDTO.getRole() + " to " + roleDTO.getUser().toLowerCase(),
-                    "api/admin/user/role"
+                    "/api/admin/user/role"
             );
         } else {
             securityEventPublisher.publishEvent(
                     SecurityEventType.REMOVE_ROLE,
                     userService.getCurrentUserDTO().getUsername(),
                     "Remove role " + roleDTO.getRole() + " from " + roleDTO.getUser().toLowerCase(),
-                    "api/admin/user/role"
+                    "/api/admin/user/role"
             );
         }
 

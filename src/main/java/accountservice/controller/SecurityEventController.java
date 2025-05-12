@@ -12,7 +12,7 @@ public class SecurityEventController {
 
     SecurityEventRepository securityEventRepository;
 
-    @GetMapping("/api/security/events/")
+    @GetMapping("/api/security/events")
     public ResponseEntity<?> getAllSecurityEvents() {
         return ResponseEntity.ok(securityEventRepository.findAll());
     }
